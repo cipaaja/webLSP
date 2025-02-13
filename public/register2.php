@@ -83,28 +83,39 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </script>
 </head>
 
-<body class="flex bg-gray-200">
-<div class="w-64 h-screen bg-gray-800 fixed">
-        <div class="flex items-center justify-center h-20 bg-gray-900">
-            <h1 class="text-white text-2xl font-bold">Inventory System</h1>
+<body class="bg-gray-100 flex">
+    <!-- Sidebar -->
+    <div class="w-64 h-screen bg-gradient-to-b from-blue-800 to-purple-800 shadow-xl fixed">
+        <div class="flex items-center justify-center h-20 bg-blue-900 shadow-lg">
+            <h1 class="text-white text-2xl font-bold">Kasir System</h1>
         </div>
-        <nav class="mt-4">
-            <a href="dashboard.php" class="block text-gray-300 py-4 px-6 hover:bg-gray-700 text-lg">
-                <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+        <nav class="mt-4 space-y-2">
+            <a href="dashboard.php" class="flex items-center text-white py-4 px-6 hover:bg-white hover:bg-opacity-20 transition rounded-lg ">
+                <i class="fas fa-tachometer-alt text-lg mr-3"></i> Dashboard
             </a>
-            <a href="products.php" class="block text-gray-300 py-4 px-6 hover:bg-gray-700 text-lg">
-                <i class="fas fa-box mr-2"></i>Products
+            <a href="products.php" class="flex items-center text-white py-4 px-6 hover:bg-white hover:bg-opacity-20 transition rounded-lg ">
+                <i class="fas fa-box text-lg mr-3"></i> Produk
             </a>
-            <a href="transaksi.php" class="block text-gray-300 py-4 px-6 hover:bg-gray-700 text-lg">
-                <i class="fas fa-exchange-alt mr-2"></i>Transactions
+            <a href="suppliers.php" class="flex items-center text-white py-4 px-6 hover:bg-white hover:bg-opacity-20 transition rounded-lg ">
+                <i class="fas fa-truck text-lg mr-3"></i> Suppliers
+            </a>
+            <a href="transaksi.php" class="flex items-center text-white py-4 px-6 hover:bg-white hover:bg-opacity-20 transition rounded-lg">
+                <i class="fas fa-exchange-alt text-lg mr-3"></i> Penjualan
+            </a>
+            <a href="pembelian.php" class="flex items-center text-white py-4 px-6 hover:bg-white hover:bg-opacity-20 transition rounded-lg ">
+                <i class="fas fa-shopping-cart text-lg mr-3"></i> Pembelian
+            </a>
+            <a href="pelanggan.php" class="flex items-center text-white py-4 px-6 hover:bg-white hover:bg-opacity-20 transition rounded-lg ">
+                <i class="fas fa-user-friends text-lg mr-3"></i> Data Pelanggan
+            </a>
+            <a href="reports.php" class="flex items-center text-white py-4 px-6 hover:bg-white hover:bg-opacity-20 transition rounded-lg ">
+                <i class="fas fa-chart-bar text-lg mr-3"></i> Reports
             </a>
             
-            <a href="reports.php" class="block text-gray-300 py-4 px-6 hover:bg-gray-700 text-lg">
-                <i class="fas fa-chart-bar mr-2"></i>Reports
-            </a>
-            <a href="register2.php" class="block text-gray-300 py-4 px-6 hover:bg-gray-700 text-lg <?php echo ($current_page == 'register2.php') ? 'bg-gray-700' : ''; ?>">
-                <i class="fas fa-user-plus mr-2"></i>User Management
-            </a>
+                <a href="register2.php" class="flex items-center text-white py-4 px-6 hover:bg-white hover:bg-opacity-20 transition rounded-lg <?php echo ($current_page == 'register2.php') ? 'border-l-4 border-white' : ''; ?>">
+                    <i class="fas fa-user-plus text-lg mr-3"></i> User Management
+                </a>
+            
         </nav>
     </div>
 

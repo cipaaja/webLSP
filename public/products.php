@@ -7,50 +7,44 @@ if (!isset($_SESSION['user_id'])) {
 $user_role = $_SESSION['role'] ?? '';
 $db = require_once __DIR__ . '/../app/koneksi.php';
 
-
 $current_page = basename($_SERVER['PHP_SELF']);
 
-// Penanganan form untuk menambah kategori
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nama_kategori'])) {
-    $nama_kategori = $_POST['nama_kategori'];
-    $deskripsi = $_POST['deskripsi'] ?? null; // Deskripsi opsional
+// Menangani tambah atau edit kategori
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $id_kategori = $_POST['id_kategori'] ?? null;
+    $nama_kategori = $_POST['nama_kategori'] ?? null;
+    $deskripsi = $_POST['deskripsi'] ?? null;
 
-    // Query untuk menyimpan data kategori
-    $stmt = $db->prepare("INSERT INTO kategori (nama_kategori, deskripsi) VALUES (:nama_kategori, :deskripsi)");
-    $stmt->bindValue(':nama_kategori', $nama_kategori);
-    $stmt->bindValue(':deskripsi', $deskripsi);
-    $stmt->execute();
-
-    // Redirect setelah menambah kategori
+    if (!empty($id_kategori)) {
+        // Edit kategori
+        $stmt = $db->prepare("UPDATE kategori SET nama_kategori = :nama_kategori, deskripsi = :deskripsi WHERE id_kategori = :id_kategori");
+        $stmt->bindValue(':nama_kategori', $nama_kategori);
+        $stmt->bindValue(':deskripsi', $deskripsi);
+        $stmt->bindValue(':id_kategori', $id_kategori);
+        $stmt->execute();
+    } else {
+        // Tambah kategori
+        $stmt = $db->prepare("INSERT INTO kategori (nama_kategori, deskripsi) VALUES (:nama_kategori, :deskripsi)");
+        $stmt->bindValue(':nama_kategori', $nama_kategori);
+        $stmt->bindValue(':deskripsi', $deskripsi);
+        $stmt->execute();
+    }
     header('Location: products.php');
     exit;
 }
 
-// Menangani permintaan untuk menghapus kategori
+// Hapus kategori
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
     $delete_id = $_POST['delete_id'];
-
-    // Query untuk menghapus kategori
     $stmt = $db->prepare("DELETE FROM kategori WHERE id_kategori = :id_kategori");
     $stmt->bindValue(':id_kategori', $delete_id);
     $stmt->execute();
 }
 
-// Menangani permintaan untuk mengedit kategori
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_kategori'])) {
-    $id_kategori = $_POST['id_kategori'];
-    $nama_kategori = $_POST['nama_kategori'];
-    $deskripsi = $_POST['deskripsi'] ?? null;
+// Ambil data kategori
+$kategori_list = $db->query("SELECT * FROM kategori")->fetchAll(PDO::FETCH_ASSOC);
 
-    // Query untuk memperbarui data kategori
-    $stmt = $db->prepare("UPDATE kategori SET nama_kategori = :nama_kategori, deskripsi = :deskripsi WHERE id_kategori = :id_kategori");
-    $stmt->bindValue(':nama_kategori', $nama_kategori);
-    $stmt->bindValue(':deskripsi', $deskripsi);
-    $stmt->bindValue(':id_kategori', $id_kategori);
-    $stmt->execute();
-}
-
-// Menangani permintaan untuk mendapatkan data kategori yang ingin diedit
+// Ambil data kategori yang akan diedit
 $edit_kategori = null;
 if (isset($_GET['edit_id'])) {
     $edit_id = $_GET['edit_id'];
@@ -58,21 +52,8 @@ if (isset($_GET['edit_id'])) {
     $stmt->bindValue(':id_kategori', $edit_id);
     $stmt->execute();
     $edit_kategori = $stmt->fetch(PDO::FETCH_ASSOC);
-    $show_form = true; // Menambahkan variabel untuk menampilkan form
-} else {
-    $show_form = false; // Form tidak ditampilkan jika tidak ada edit_id
-}
-
-// Mengambil data kategori dari database
-$kategori_list = [];
-$result = $db->query("SELECT * FROM kategori");
-if ($result) {
-    while ($row = $result->fetch(PDO::FETCH_ASSOC)) { // Menggunakan fetch() dengan PDO::FETCH_ASSOC
-        $kategori_list[] = $row;
-    }
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="id">
@@ -86,27 +67,36 @@ if ($result) {
 </head>
 
 <body class="bg-gray-100 flex">
-    <!-- Sidebar stays the same -->
-    <div class="w-64 h-screen bg-gray-800 fixed">
-        <div class="flex items-center justify-center h-20 bg-gray-900">
-            <h1 class="text-white text-2xl font-bold">Inventory System</h1>
+    <!-- Sidebar -->
+    <div class="w-64 h-screen bg-gradient-to-b from-blue-800 to-purple-800 shadow-xl fixed">
+        <div class="flex items-center justify-center h-20 bg-blue-900 shadow-lg">
+            <h1 class="text-white text-2xl font-bold">Kasir System</h1>
         </div>
-        <nav class="mt-4">
-            <a href="dashboard.php" class="block text-gray-300 py-4 px-6 hover:bg-gray-700 text-lg ">
-                <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+        <nav class="mt-4 space-y-2">
+            <a href="dashboard.php" class="flex items-center text-white py-4 px-6 hover:bg-white hover:bg-opacity-20 transition rounded-lg ">
+                <i class="fas fa-tachometer-alt text-lg mr-3"></i> Dashboard
             </a>
-            <a href="products.php" class="block text-gray-300 py-4 px-6 hover:bg-gray-700 text-lg <?php echo ($current_page == 'products.php') ? 'bg-gray-700' : ''; ?>">
-                <i class="fas fa-box mr-2"></i>Products
+            <a href="products.php" class="flex items-center text-white py-4 px-6 hover:bg-white hover:bg-opacity-20 transition rounded-lg <?php echo ($current_page == 'products.php') ? 'border-l-4 border-white' : ''; ?>">
+                <i class="fas fa-box text-lg mr-3"></i> Produk
             </a>
-            <a href="transaksi.php" class="block text-gray-300 py-4 px-6 hover:bg-gray-700 text-lg">
-                <i class="fas fa-exchange-alt mr-2"></i>Transactions
+            <a href="suppliers.php" class="flex items-center text-white py-4 px-6 hover:bg-white hover:bg-opacity-20 transition rounded-lg">
+                <i class="fas fa-truck text-lg mr-3"></i> Suppliers
             </a>
-            <a href="reports.php" class="block text-gray-300 py-4 px-6 hover:bg-gray-700 text-lg">
-                <i class="fas fa-chart-bar mr-2"></i>Reports
+            <a href="transaksi.php" class="flex items-center text-white py-4 px-6 hover:bg-white hover:bg-opacity-20 transition rounded-lg">
+                <i class="fas fa-exchange-alt text-lg mr-3"></i> Penjualan
+            </a>
+            <a href="pembelian.php" class="flex items-center text-white py-4 px-6 hover:bg-white hover:bg-opacity-20 transition rounded-lg ">
+                <i class="fas fa-shopping-cart text-lg mr-3"></i> Pembelian
+            </a>
+            <a href="pelanggan.php" class="flex items-center text-white py-4 px-6 hover:bg-white hover:bg-opacity-20 transition rounded-lg ">
+                <i class="fas fa-user-friends text-lg mr-3"></i> Data Pelanggan
+            </a>
+            <a href="reports.php" class="flex items-center text-white py-4 px-6 hover:bg-white hover:bg-opacity-20 transition rounded-lg">
+                <i class="fas fa-chart-bar text-lg mr-3"></i> Reports
             </a>
             <?php if ($user_role === 'admin') : ?>
-                <a href="register2.php" class="block text-gray-300 py-4 px-6 hover:bg-gray-700 text-lg">
-                    <i class="fas fa-user-plus mr-2"></i>User Management
+                <a href="register2.php" class="flex items-center text-white py-4 px-6 hover:bg-white hover:bg-opacity-20 transition rounded-lg">
+                    <i class="fas fa-user-plus text-lg mr-3"></i> User Management
                 </a>
             <?php endif; ?>
         </nav>
@@ -138,19 +128,19 @@ if ($result) {
         </button>
 
         <!-- Form untuk menambah kategori -->
-        <form id="categoryForm" method="POST" class="mb-6 <?php echo $show_form ? '' : 'hidden'; ?>">
+        <form id="categoryForm" method="POST" class="mb-6 <?php echo isset($edit_kategori) ? '' : 'hidden'; ?>">
+            <input type="hidden" name="id_kategori" value="<?php echo $edit_kategori['id_kategori'] ?? ''; ?>">
             <input type="text" name="nama_kategori" placeholder="Nama Kategori" required class="border p-2 rounded mb-4" value="<?php echo $edit_kategori['nama_kategori'] ?? ''; ?>">
             <input type="text" name="deskripsi" placeholder="Deskripsi (opsional)" class="border p-2 rounded mb-4" value="<?php echo $edit_kategori['deskripsi'] ?? ''; ?>">
-            <input type="hidden" name="id_kategori" value="<?php echo $edit_kategori['id_kategori'] ?? ''; ?>">
-            <button type="submit" class="bg-blue-500 text-white p-2 rounded mb-4 "><?php echo isset($edit_kategori) ? 'Simpan Perubahan' : 'Tambah Kategori'; ?></button>
-            <button type="button" id="closeFormButton" class="bg-red-500 text-white p-2 rounded mb-4">Close</button>
+            <button type="submit" class="bg-blue-500 text-white p-2 rounded mb-4">
+                <?php echo isset($edit_kategori) ? 'Simpan Perubahan' : 'Tambah Kategori'; ?>
+            </button>
+            <button type="button" id="closeFormButton" class="bg-red-500 text-white p-2 rounded mb-4">Tutup</button>
         </form>
-
-        <!-- Tabel untuk menampilkan data kategori -->
         <table class="min-w-full bg-white rounded-lg shadow-lg mb-4">
             <thead>
                 <tr class="bg-gray-200">
-                    <th class="p-3 border-b text-left">ID Kategori</th>
+                    <th class="p-3 border-b text-left">ID</th>
                     <th class="p-3 border-b text-left">Nama Kategori</th>
                     <th class="p-3 border-b text-left">Deskripsi</th>
                     <th class="p-3 border-b text-left">Aksi</th>
@@ -163,7 +153,7 @@ if ($result) {
                         <td class="p-3 border-b"><?php echo $kategori['nama_kategori']; ?></td>
                         <td class="p-3 border-b"><?php echo $kategori['deskripsi'] ?? 'N/A'; ?></td>
                         <td class="p-3 border-b">
-                            <a href="products.php?edit_id=<?= $kategori['id_kategori'] ?>" class="text-blue-500 edit-button">
+                            <a href="products.php?edit_id=<?= $kategori['id_kategori'] ?>" class="text-blue-500">
                                 <i class="fas fa-edit"></i> Edit
                             </a>
                             <form action="products.php" method="POST" class="inline">
